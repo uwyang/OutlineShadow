@@ -150,51 +150,81 @@ foam.CLASS({
     properties: [
       {
         name: 'controllerDetailView',
-        factory: function(controller){
-          return this.DetailView.create({
-            data: controller,
-            showActions: true,
-          });
-        }
       },
       {
         name: 'controller',
         factory: function(){
           return this.BubblesController.create({imagePath: '/src/main/images/butterfly2.png'});
         }
-      }
+      },
+
+      {
+        name: 'imagePaths',
+        factory: function(){
+          return [
+            '/src/main/images/moth.png',
+            '/src/main/images/butterfly2.png',
+          ];
+        }
+      },
+
     ],
 
     methods: [
       function initE(){
         //add title etc here.
-        this.start();
-        this.end();
+        this.start('div').add(this.controller).end(); 
+        this.controllerDetailView = this.DetailView.create({
+          data$: this.controller$,
+          showActions: true,
+        });
+        /*
+        this.controllerDetailView.properties =
+        [
+          com.uwyang.demos.BubblesController.STEP_SIZE,
+          //this.controller.LINE_ALPHA,
+        ];*/
+        this.start('div').
+          cssClass(this.myClass('right')).
+          add(this.controllerDetailView).
+          end();
 
-        this.add(this.controller);
-        this.controllerDetailView.properties = [
-          controller.STEP_SIZE,
-          controller.LINE_ALPHA,
-        ];
-        this.add(this.controllerDetailView);
+          (this.makeButtons()).forEach((b)=> {
+            this.add(b);
+          });
+
+      },
+
+      function makeButtons(){
+        /*
+        <img src="https://www.google.co.uk/images/srpr/logo3w.png" alt="beer" />
+        <input type="image" src="https://www.google.co.uk/images/srpr/logo3w.png" />*/
+        var buttonsArr = [];
+        this.imagePaths.forEach((path) =>{
+          var e = this.Element.create().setNodeName('input');
+          e.cssClass(this.myClass('img-button'));
+          e.setAttribute('type', 'image');
+          e.setAttribute('src', path);
+          e.on('click', () => {
+            console.log('input img clicked. ', path); }
+          );
+          buttonsArr.push(e);
+        });
+        return buttonsArr;
       }
     ],
 
     axioms: [
         foam.u2.CSS.create({
             code: function() {/*
-                                div.com-serviceecho-workorder-schedule-CellWrapperView {
-                                position: relative;
-                                width: 100%;
-                                height: 100%;
-                                cursor: auto;
-
-                                border-radius: 1px;
-                                box-sizing: border-box;
-                                -moz-box-sizing: border-box;
-                                -webkit-box-sizing: border-box;
-                                border: solid transparent 2px;
-                                }
+                ^right{
+                  height:100%;
+                  background:blue;
+                  float:right;
+                }
+                ^img-button{
+                width: 100px;
+              }
                              */}
         })
     ]
@@ -224,8 +254,17 @@ foam.CLASS({
       }
     },
     {
+      name: 'imagePaths',
+      factory: function(){
+        return [
+          '/src/main/images/moth.png',
+          '/src/main/images/butterfly2.png',
+        ];
+      }
+    },
+    {
       name: 'imagePath',
-      value:'/src/main/images/butterfly2.png',
+      value:'/src/main/images/moth.png',
 
     },
     [ 'width',      1000 ],
@@ -243,7 +282,7 @@ foam.CLASS({
       name: 'points',
       factory: function(){return []; },
       postSet: function(old, nu){
-        this.reStart();
+        //this.reStart();
       }
     },
 
@@ -276,6 +315,7 @@ foam.CLASS({
 
       function initCView() {
         this.SUPER();
+        this.canvas.style.position = "absolute";
         this.canvas.erase= (()=>{});
         var image = new Image();
         image.onload = () =>  {
@@ -403,24 +443,19 @@ foam.CLASS({
       {
         name: 'start',
         code: function() {
-          this.timer.start();
-          this.state.start(this);
+          this.engine.stopped_ = false;
+          this.engine.tick();
         }
       },
       {
         name: 'stop',
         code: function() {
-          this.timer.stop();
+          this.engine.stopped_ = true;
         }
       },
       {
         name: 'reset',
         code: function() {
-          this.timer.stop();
-          this.timer = undefined;
-          this.currentRound = undefined;
-          this.state = undefined;
-          this.action = undefined;
         }
       }
     ]
@@ -588,9 +623,11 @@ foam.CLASS({
 
     function updateChildren() {
       var cs = this.children;
+      if (!cs || !cs.length) return;
 
       var xArr =[], yArr =[];
       cs.forEach((c) => {
+        if (!c) return; 
         this.updateChild(c);
         if (c.x >=20 || c.y >=20){
           xArr.push(c.x);

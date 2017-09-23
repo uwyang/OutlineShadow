@@ -36,9 +36,11 @@ foam.CLASS({
 
     function updateChildren() {
       var cs = this.children;
+      if (!cs || !cs.length) return;
 
       var xArr =[], yArr =[];
       cs.forEach((c) => {
+        if (!c) return; 
         this.updateChild(c);
         if (c.x >=20 || c.y >=20){
           xArr.push(c.x);

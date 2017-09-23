@@ -23,8 +23,17 @@ foam.CLASS({
       }
     },
     {
+      name: 'imagePaths',
+      factory: function(){
+        return [
+          '/src/main/images/moth.png',
+          '/src/main/images/butterfly2.png',
+        ];
+      }
+    },
+    {
       name: 'imagePath',
-      value:'/src/main/images/butterfly2.png',
+      value:'/src/main/images/moth.png',
 
     },
     [ 'width',      1000 ],
@@ -42,7 +51,7 @@ foam.CLASS({
       name: 'points',
       factory: function(){return []; },
       postSet: function(old, nu){
-        this.reStart();
+        //this.reStart();
       }
     },
 
@@ -75,6 +84,7 @@ foam.CLASS({
 
       function initCView() {
         this.SUPER();
+        this.canvas.style.position = "absolute";
         this.canvas.erase= (()=>{});
         var image = new Image();
         image.onload = () =>  {
@@ -202,24 +212,19 @@ foam.CLASS({
       {
         name: 'start',
         code: function() {
-          this.timer.start();
-          this.state.start(this);
+          this.engine.stopped_ = false;
+          this.engine.tick();
         }
       },
       {
         name: 'stop',
         code: function() {
-          this.timer.stop();
+          this.engine.stopped_ = true;
         }
       },
       {
         name: 'reset',
         code: function() {
-          this.timer.stop();
-          this.timer = undefined;
-          this.currentRound = undefined;
-          this.state = undefined;
-          this.action = undefined;
         }
       }
     ]
