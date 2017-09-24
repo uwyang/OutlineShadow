@@ -2,6 +2,7 @@ FILES([
   {name: "com/uwyang/demos/Bubbles"},
   {name: "com/uwyang/demos/BubblesMain"},
   {name: "com/uwyang/demos/BubblesController"},
+  {name: "com/uwyang/demos/BubblesSettingsController"},
   {name: "com/uwyang/demos/BubblesCollider"},
   {name: "com/uwyang/demos/Bubble"},
   //{name: "com/uwyang/demos/LiveCoder"},

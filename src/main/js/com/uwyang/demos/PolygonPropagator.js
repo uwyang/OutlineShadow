@@ -20,14 +20,22 @@ foam.CLASS({
       hidden: true
     },
     {
-      name: 'stepSize',
-      value: 3,
-    },
-    {
       name: 'polygon',
     },
     {
       name: 'canvas',
+    },
+    {
+      name: 'stepSize',
+      value: 5,
+    },
+    {
+      name: 'lineRGBA',
+      value: 'rgba(0,0,0,0.01)',
+      postSet: function(old, nu){
+        if (!nu) return;
+        this.polygon.color = nu; 
+      }
     }
 
   ],
@@ -40,7 +48,7 @@ foam.CLASS({
 
       var xArr =[], yArr =[];
       cs.forEach((c) => {
-        if (!c) return; 
+        if (!c) return;
         this.updateChild(c);
         if (c.x >=20 || c.y >=20){
           xArr.push(c.x);
@@ -53,7 +61,7 @@ foam.CLASS({
       this.polygon = this.Polygon.create({
         xCoordinates: xArr,
         yCoordinates: yArr,
-        color: 'rgba(0,0,0,0.02)',
+        color: this.lineRGBA,
       });
       this.polygon.paintSelf(this.canvas.context);
       //this.add(this.polygon);

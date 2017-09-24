@@ -23,17 +23,14 @@ foam.CLASS({
       }
     },
     {
-      name: 'imagePaths',
-      factory: function(){
-        return [
-          '/src/main/images/moth.png',
-          '/src/main/images/butterfly2.png',
-        ];
-      }
-    },
-    {
       name: 'imagePath',
       value:'/src/main/images/moth.png',
+      postSet: function(old, nu){
+        if (!this.canvas) return;
+        if (old.toLowerCase() !== nu.toLowerCase() ){
+          this.resetCanvas();
+        }
+      }
 
     },
     [ 'width',      1000 ],
@@ -41,7 +38,13 @@ foam.CLASS({
     [ 'background', '#ccf' ],
     { name: 'engine',   factory: function() {
       //var e = this.BubblesCollider.create({gravity: true});
-      var e = this.PolygonPropagator.create({gravity: true, polygon: this.polygon, canvas: this.canvas});
+      var e = this.PolygonPropagator.create({
+        gravity: true,
+        polygon: this.polygon,
+        canvas: this.canvas,
+        stepSize: this.stepSize,
+        lineRGBA: this.lineRGBA,
+      });
 
       e.start();
       return this.onDetach(e);
@@ -65,11 +68,38 @@ foam.CLASS({
     {
       name: 'stepSize',
       value: 5,
-    },
+        viewa: { class: 'foam.u2.FloatView', precision: 1, onKey: true },
+        viewb: { class: 'foam.u2.RangeView', step: 1, maxValue: 100, onKey: true }
+      },
     {
       name: 'lineAlpha',
+      class: 'Float',
+      view: {
+        class: 'foam.u2.view.DualView',
+        viewa: { class: 'foam.u2.FloatView', precision: 3, onKey: true },
+        viewb: { class: 'foam.u2.RangeView', step: 0.005, maxValue: 1,minValue: 0,  onKey: true }
+      },
       value: 0.01,
+      postSet: function(){
+        this.updateLineRGBA();
+      }
+    },
+    {
+      name: 'lineColor',
+      class: 'Color',
+      postSet: function(old, nu){
+        if (!nu) return;
+        this.updateLineRGBA();
+      }
+    },
+    {
+      name: 'lineRGBA',
+
+    },
+    {
+      name: 'stopped',
     }
+
 
   ],
 
@@ -81,9 +111,19 @@ foam.CLASS({
         console.log('earase');
       },
 
+      function updateLineRGBA(){
+        var c = this.hexToRgb(this.lineColor);
+        //want: color: 'rgba(0,0,0,0.02)',
+        var str = "rgba(" + c.r + ", " + c.g + ", " + c.b + ", " + this.lineAlpha + ")";
+        console.log("new color", str);
+        this.lineRGBA = str;
+      },
+
+
 
       function initCView() {
         this.SUPER();
+        //this.stopped$ = this.engine.stopped_$;
         this.canvas.style.position = "absolute";
         this.canvas.erase= (()=>{});
         var image = new Image();
@@ -92,6 +132,20 @@ foam.CLASS({
           this.createPolygonPropagator(image);
         }
         image.src = this.imagePath;
+
+      },
+
+      function resetCanvas(){
+          this.canvas.el().width = this.canvas.el().width;
+          var image = new Image();
+          image.src = this.imagePath;
+          image.onload = () =>  {
+            //this.createBubbleCollider(image);
+            this.createPolygonPropagator(image);
+          }
+          this.engine.tick();
+          this.engine.stopped_ = true;
+
 
       },
 
@@ -112,6 +166,9 @@ foam.CLASS({
       },
 
       function createPolygonPropagator(image){
+        this.clearProperty('polygon');
+        this.clearProperty('engine');
+
         var polygon = getImageOutline(image);
         // polygon is now an array of {x,y} objects. Have fun!
         var c = 0;
@@ -144,10 +201,10 @@ foam.CLASS({
         this.polygon = this.Polygon.create({
           xCoordinates: xArr,
           yCoordinates: yArr,
-          alpha: 0.5,
+          stepSize: this.stepSize,
         });
         this.engine.add(this.polygon);
-        this.timer.i$.sub(this.invalidated.pub);
+        //this.timer.i$.sub(this.invalidated.pub);
 
         console.log("points: ", polygon.length, " added. ");
       },
@@ -190,7 +247,7 @@ foam.CLASS({
       function addPoint(c){
         this.engine.add(c);
         this.add(c);
-
+        /*
         this.timer.i$.sub(foam.Function.bind(function circleBoundOnWalls(c) {
           if ( c.y > 1/this.scaleY*this.height+50 ) {
             c.y = -50;
@@ -198,7 +255,25 @@ foam.CLASS({
           if ( c.x < 0          ) c.vx =  Math.abs(c.vx)+0.1;
           if ( c.x > this.width ) c.vx = -Math.abs(c.vx)-0.1;
         }, this, c));
-      }
+        */
+      },
+
+      function setSettings(){
+        this.engine.stepSize = this.stepSize;
+        this.engine.lineRGBA = this.lineRGBA;
+      },
+
+
+
+      function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
     ],
 
     actions: [
@@ -225,8 +300,21 @@ foam.CLASS({
       {
         name: 'reset',
         code: function() {
+          this.resetCanvas();
+        }
+      },
+      {
+        name: 'set',
+        /*
+        isEnabled: function(stopped){
+          return stopped;
+        },*/
+        label: 'SET',
+        code: function(){
+          this.setSettings();
         }
       }
+
     ]
 
 });
