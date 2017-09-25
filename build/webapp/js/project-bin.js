@@ -164,6 +164,17 @@ foam.CLASS({
           return [
             '/src/main/images/moth.png',
             '/src/main/images/butterfly2.png',
+
+            //'/src/main/images/cherry1.png',
+            '/src/main/images/cherry2.png',
+            '/src/main/images/feather1.png',
+            '/src/main/images/feather2.png',
+            '/src/main/images/stag.png',
+            //'/src/main/images/batwings.png',
+            '/src/main/images/cat.png',
+            '/src/main/images/hummingbird.png',
+
+            '/src/main/images/girl1.png',
           ];
         }
       },
@@ -173,9 +184,9 @@ foam.CLASS({
     methods: [
       function initE(){
         //add title etc here.
-      this.start(this.STOP, {data: this}).end(); 
+      this.start(this.STOP, {data: this}).end();
         this.start('div').cssClass(this.myClass('left')).
-          add(this.makeButtonsDiv()).add(this.controller).end();
+          add(this.makeButtonsDiv()).add(this.controller).cssClass(this.myClass('controller')).end();
 
         this.controllerDetailView = this.DetailView.create({
           data$: this.controller$,
@@ -197,6 +208,7 @@ foam.CLASS({
         ];*/
         this.start('div').
           cssClass(this.myClass('right')).
+          start(this.SAVE, {data: this}).end().
           add(this.controllerDetailView).
           end();
 
@@ -234,6 +246,10 @@ foam.CLASS({
                 float:left;
                 display: in-line;
               }
+              ^controller{
+                  overflow: scroll;
+                  max-width: 1000px;
+              }
                 ^right{
                   height:100%;
                   background:blue;
@@ -257,6 +273,16 @@ foam.CLASS({
           debugger;
         }
       },
+      {
+        name: 'save',
+        label: 'Save Image', 
+        code: function(){
+          if (!this.controller || !this.controller.canvas) return;
+          var imageDownloadLink = this.controller.canvas.el().toDataURL("image/png").replace("image/png", "image/octet-stream");
+          // here is the most important part because if you dont replace you will get a DOM 18 exception.
+          window.location.href=imageDownloadLink; // it will save locally
+        }
+      }
     ],
 });
 foam.CLASS({
@@ -359,6 +385,17 @@ foam.CLASS({
     },
     {
       name: 'stopped',
+    },
+    {
+      name: 'image',
+    },
+    {
+      name: 'xPadding',
+      value: 50,
+    },
+    {
+      name: 'yPadding',
+      value: 50,
     }
 
 
@@ -387,23 +424,25 @@ foam.CLASS({
         //this.stopped$ = this.engine.stopped_$;
         this.canvas.style.position = "absolute";
         this.canvas.erase= (()=>{});
+        this.loadImage();
+
+      },
+
+      function loadImage(image){
         var image = new Image();
+        image.src = this.imagePath;
         image.onload = () =>  {
           //this.createBubbleCollider(image);
-          this.createPolygonPropagator(image);
+          this.width = image.width + (2*this.xPadding);
+          this.height = image.height + (2*this.yPadding);
+          this.image = image;
+          this.initializeEngine(image);
         }
-        image.src = this.imagePath;
-
       },
 
       function resetCanvas(){
           this.canvas.el().width = this.canvas.el().width;
-          var image = new Image();
-          image.src = this.imagePath;
-          image.onload = () =>  {
-            //this.createBubbleCollider(image);
-            this.createPolygonPropagator(image);
-          }
+          this.loadImage();
           this.engine.tick();
           this.engine.stopped_ = true;
 
@@ -426,7 +465,7 @@ foam.CLASS({
         console.log("points: ", polygon.length, " added. ");
       },
 
-      function createPolygonPropagator(image){
+      function initializeEngine(image){
         this.clearProperty('polygon');
         this.clearProperty('engine');
 
@@ -435,11 +474,16 @@ foam.CLASS({
         var c = 0;
         var xArr =[];
         var yArr = [];
+
+        polygon.push({x: polygon[0].x, y: polygon[0].y});
+        var xoffset = this.xPadding;
+        var yoffset = this.yPadding;
+
         polygon.forEach((p)=> {
           var bubblePoint = this.Bubble.create({
             radius: 1,
-            x: p.x,
-            y: p.y,
+            x: p.x + xoffset,
+            y: p.y + yoffset,
             //arcWidth: 6,
             //friction: 0.96,
             //gravity: 0,
@@ -457,8 +501,6 @@ foam.CLASS({
            //this.addPoint(this.getPhysicalPoint(p, -0.1));
          //c++;
         });
-        xArr.push(polygon[0].x);
-        yArr.push(polygon[0].y);
         this.polygon = this.Polygon.create({
           xCoordinates: xArr,
           yCoordinates: yArr,
@@ -574,7 +616,17 @@ foam.CLASS({
         code: function(){
           this.setSettings();
         }
+      },
+      /*
+      {
+        name: 'save',
+        code: function(){
+          if (!this.controller || !this.controller.canvas) return;
+          var image = this.controller.canvas.el().toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+          window.location.href=image; // it will save locally
+        }
       }
+      */
 
     ]
 
@@ -816,7 +868,7 @@ foam.CLASS({
       value: 'rgba(0,0,0,0.01)',
       postSet: function(old, nu){
         if (!nu) return;
-        this.polygon.color = nu; 
+        this.polygon.color = nu;
       }
     }
 
@@ -830,15 +882,12 @@ foam.CLASS({
 
       var xArr =[], yArr =[];
       cs.forEach((c) => {
-        if (!c) return;
+        if (!c || !(c.cls_.name == "Bubble")) return;
         this.updateChild(c);
-        if (c.x >=20 || c.y >=20){
           xArr.push(c.x);
           yArr.push(c.y);
-        }
+
       });
-      xArr.push(cs[0].x);
-      yArr.push(cs[0].y);
       //this.remove(this.polygon);
       this.polygon = this.Polygon.create({
         xCoordinates: xArr,
@@ -851,7 +900,9 @@ foam.CLASS({
 
     function updateChild(c) {
         c.x += Math.random()*this.stepSize - this.stepSize/2;
+        c.x = Math.min(Math.max(0, c.x), this.canvas.el().width);
         c.y += Math.random()*this.stepSize - this.stepSize/2;
+        c.y = Math.min(Math.max(0, c.y), this.canvas.el().height)
     },
 
   ],

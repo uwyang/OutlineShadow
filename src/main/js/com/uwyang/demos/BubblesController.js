@@ -98,6 +98,17 @@ foam.CLASS({
     },
     {
       name: 'stopped',
+    },
+    {
+      name: 'image',
+    },
+    {
+      name: 'xPadding',
+      value: 50,
+    },
+    {
+      name: 'yPadding',
+      value: 50,
     }
 
 
@@ -126,23 +137,25 @@ foam.CLASS({
         //this.stopped$ = this.engine.stopped_$;
         this.canvas.style.position = "absolute";
         this.canvas.erase= (()=>{});
+        this.loadImage();
+
+      },
+
+      function loadImage(image){
         var image = new Image();
+        image.src = this.imagePath;
         image.onload = () =>  {
           //this.createBubbleCollider(image);
-          this.createPolygonPropagator(image);
+          this.width = image.width + (2*this.xPadding);
+          this.height = image.height + (2*this.yPadding);
+          this.image = image;
+          this.initializeEngine(image);
         }
-        image.src = this.imagePath;
-
       },
 
       function resetCanvas(){
           this.canvas.el().width = this.canvas.el().width;
-          var image = new Image();
-          image.src = this.imagePath;
-          image.onload = () =>  {
-            //this.createBubbleCollider(image);
-            this.createPolygonPropagator(image);
-          }
+          this.loadImage();
           this.engine.tick();
           this.engine.stopped_ = true;
 
@@ -165,7 +178,7 @@ foam.CLASS({
         console.log("points: ", polygon.length, " added. ");
       },
 
-      function createPolygonPropagator(image){
+      function initializeEngine(image){
         this.clearProperty('polygon');
         this.clearProperty('engine');
 
@@ -174,11 +187,16 @@ foam.CLASS({
         var c = 0;
         var xArr =[];
         var yArr = [];
+
+        polygon.push({x: polygon[0].x, y: polygon[0].y});
+        var xoffset = this.xPadding;
+        var yoffset = this.yPadding;
+
         polygon.forEach((p)=> {
           var bubblePoint = this.Bubble.create({
             radius: 1,
-            x: p.x,
-            y: p.y,
+            x: p.x + xoffset,
+            y: p.y + yoffset,
             //arcWidth: 6,
             //friction: 0.96,
             //gravity: 0,
@@ -196,8 +214,6 @@ foam.CLASS({
            //this.addPoint(this.getPhysicalPoint(p, -0.1));
          //c++;
         });
-        xArr.push(polygon[0].x);
-        yArr.push(polygon[0].y);
         this.polygon = this.Polygon.create({
           xCoordinates: xArr,
           yCoordinates: yArr,
@@ -313,7 +329,17 @@ foam.CLASS({
         code: function(){
           this.setSettings();
         }
+      },
+      /*
+      {
+        name: 'save',
+        code: function(){
+          if (!this.controller || !this.controller.canvas) return;
+          var image = this.controller.canvas.el().toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+          window.location.href=image; // it will save locally
+        }
       }
+      */
 
     ]
 

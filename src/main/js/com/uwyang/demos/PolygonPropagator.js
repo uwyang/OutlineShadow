@@ -34,7 +34,7 @@ foam.CLASS({
       value: 'rgba(0,0,0,0.01)',
       postSet: function(old, nu){
         if (!nu) return;
-        this.polygon.color = nu; 
+        this.polygon.color = nu;
       }
     }
 
@@ -48,15 +48,12 @@ foam.CLASS({
 
       var xArr =[], yArr =[];
       cs.forEach((c) => {
-        if (!c) return;
+        if (!c || !(c.cls_.name == "Bubble")) return;
         this.updateChild(c);
-        if (c.x >=20 || c.y >=20){
           xArr.push(c.x);
           yArr.push(c.y);
-        }
+
       });
-      xArr.push(cs[0].x);
-      yArr.push(cs[0].y);
       //this.remove(this.polygon);
       this.polygon = this.Polygon.create({
         xCoordinates: xArr,
@@ -69,7 +66,9 @@ foam.CLASS({
 
     function updateChild(c) {
         c.x += Math.random()*this.stepSize - this.stepSize/2;
+        c.x = Math.min(Math.max(0, c.x), this.canvas.el().width);
         c.y += Math.random()*this.stepSize - this.stepSize/2;
+        c.y = Math.min(Math.max(0, c.y), this.canvas.el().height)
     },
 
   ],

@@ -27,6 +27,17 @@ foam.CLASS({
           return [
             '/src/main/images/moth.png',
             '/src/main/images/butterfly2.png',
+
+            //'/src/main/images/cherry1.png',
+            '/src/main/images/cherry2.png',
+            '/src/main/images/feather1.png',
+            '/src/main/images/feather2.png',
+            '/src/main/images/stag.png',
+            //'/src/main/images/batwings.png',
+            '/src/main/images/cat.png',
+            '/src/main/images/hummingbird.png',
+
+            '/src/main/images/girl1.png',
           ];
         }
       },
@@ -36,9 +47,9 @@ foam.CLASS({
     methods: [
       function initE(){
         //add title etc here.
-      this.start(this.STOP, {data: this}).end(); 
+      this.start(this.STOP, {data: this}).end();
         this.start('div').cssClass(this.myClass('left')).
-          add(this.makeButtonsDiv()).add(this.controller).end();
+          add(this.makeButtonsDiv()).add(this.controller).cssClass(this.myClass('controller')).end();
 
         this.controllerDetailView = this.DetailView.create({
           data$: this.controller$,
@@ -60,6 +71,7 @@ foam.CLASS({
         ];*/
         this.start('div').
           cssClass(this.myClass('right')).
+          start(this.SAVE, {data: this}).end().
           add(this.controllerDetailView).
           end();
 
@@ -97,6 +109,10 @@ foam.CLASS({
                 float:left;
                 display: in-line;
               }
+              ^controller{
+                  overflow: scroll;
+                  max-width: 1000px;
+              }
                 ^right{
                   height:100%;
                   background:blue;
@@ -120,5 +136,15 @@ foam.CLASS({
           debugger;
         }
       },
+      {
+        name: 'save',
+        label: 'Save Image', 
+        code: function(){
+          if (!this.controller || !this.controller.canvas) return;
+          var imageDownloadLink = this.controller.canvas.el().toDataURL("image/png").replace("image/png", "image/octet-stream");
+          // here is the most important part because if you dont replace you will get a DOM 18 exception.
+          window.location.href=imageDownloadLink; // it will save locally
+        }
+      }
     ],
 });
