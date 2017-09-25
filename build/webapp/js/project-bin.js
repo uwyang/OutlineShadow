@@ -867,7 +867,7 @@ foam.CLASS({
       name: 'lineRGBA',
       value: 'rgba(0,0,0,0.01)',
       postSet: function(old, nu){
-        if (!nu) return;
+        if (!nu || !this.polygon ) return;
         this.polygon.color = nu;
       }
     }
