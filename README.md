@@ -1,19 +1,19 @@
 # OutlineShadow
 
-## Introduction: 
+## Usage
+
+User may specify random step length, step opacity(alpha) and color. 
+You may also save your creation. 
+
+![Screenshot](https://github.com/uwyang/OutlineShadow/blob/master/examples/UI_screenshot.png "UI")
+
+## Results
 I've been interested in Generative art since the age of flash. Many frame work have crossed my path, including Flash, Processing,Processing.js, Java(in its pure and original form), and now I'm trying to make some generative art pieces with FOAM.
 
 ![Original](https://github.com/uwyang/OutlineShadow/blob/master/examples/stag_shadow.png "stag")
 ![Shadow](https://github.com/uwyang/OutlineShadow/blob/master/examples/stag.png "stag")
 
 
-![Shadow](https://github.com/uwyang/OutlineShadow/blob/master/examples/girl_sketch.png "girl")
-![Original](https://github.com/uwyang/OutlineShadow/blob/master/examples/girl.png "girl")
-
-## UI
-
-User may specify random step length, step opacity(alpha) and color. 
-You may also save your creation. 
 
 ## Technologies used: 
 
